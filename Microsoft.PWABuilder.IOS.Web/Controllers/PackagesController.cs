@@ -3,29 +3,26 @@ using Microsoft.Extensions.Logging;
 using Microsoft.PWABuilder.IOS.Web.Models;
 using Microsoft.PWABuilder.IOS.Web.Services;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO.Compression;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
+using PWABuilder.IOS.Services.Extensions;
+using PWABuilder.IOS.Services.Models;
+using PWABuilder.IOS.Services.Services;
+using SystemFile = System.IO.File;
+
 
 namespace Microsoft.PWABuilder.IOS.Web.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    public class PackagesController : ControllerBase
+    public class PackagesController(
+        IOSPackageCreator packageCreator,
+        AnalyticsService analytics,
+        TempDirectory temp,
+        IOptions<AppSettings> appSettings,
+        ILogger<PackagesController> logger) : ControllerBase
     {
-        private readonly ILogger<PackagesController> logger;
-        private readonly IOSPackageCreator packageCreator;
-        private readonly AnalyticsService analytics;
-
-        public PackagesController(
-            IOSPackageCreator packageCreator,
-            AnalyticsService analytics,
-            ILogger<PackagesController> logger)
-        {
-            this.packageCreator = packageCreator;
-            this.analytics = analytics;
-            this.logger = logger;
-        }
 
         [HttpPost]
         public async Task<FileResult> Create(IOSAppPackageOptions options)
@@ -43,14 +40,22 @@ namespace Microsoft.PWABuilder.IOS.Web.Controllers
             try
             {
                 var optionsValidated = ValidateOptions(options);
-                var packageBytes = await packageCreator.Create(optionsValidated);
+                var outputDir = temp.CreateDirectory($"ios-package-{Guid.NewGuid()}");
+                await packageCreator.Create(optionsValidated, outputDir);
+                // Zip it all up.
+                var zipFile = CreateZip(outputDir);
+                var packageBytes = await SystemFile.ReadAllBytesAsync(zipFile);
                 analytics.Record(optionsValidated.Url.ToString(), success: true, optionsValidated, analyticsInfo, error: null);
-                return File(packageBytes, "application/zip", $"{options.Name}-ios-app-package.zip");
+                return this.File(packageBytes, "application/zip", $"{options.Name}-ios-app-package.zip");
             }
             catch (Exception error)
             {
                 analytics.Record(options.Url ?? "https://EMPTY_URL", success: false, null, analyticsInfo, error: error.ToString());
                 throw;
+            }
+            finally
+            {
+                temp.CleanUp();
             }
         }
 
@@ -65,6 +70,16 @@ namespace Microsoft.PWABuilder.IOS.Web.Controllers
                 logger.LogError(error, "Invalid package options");
                 throw;
             }
+        }
+        
+        private string CreateZip(string outputDir)
+        {
+            var zipFilePath = temp.CreateFile();
+            using var zipFile = SystemFile.Create(zipFilePath);
+            using var zipArchive = new ZipArchive(zipFile, ZipArchiveMode.Create);
+            zipArchive.CreateEntryFromFile(appSettings.Value.NextStepsPath, "next-steps.html");
+            zipArchive.CreateEntryFromDirectory(outputDir, "src");
+            return zipFilePath;
         }
     }
 }

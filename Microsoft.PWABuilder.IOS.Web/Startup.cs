@@ -14,6 +14,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
+using PWABuilder.IOS.Services;
+using PWABuilder.IOS.Services.Models;
 
 namespace Microsoft.PWABuilder.IOS.Web
 {
@@ -41,11 +44,10 @@ namespace Microsoft.PWABuilder.IOS.Web
                     .AllowAnyHeader()
                     .AllowAnyMethod());
             });
-
+            services.AddBuilderServices();
             services.AddTransient<TempDirectory>();
-            services.AddTransient<ImageGenerator>();
             services.AddTransient<AnalyticsService>();
-            services.AddTransient<IOSPackageCreator>();
+            services.AddSingleton(c => c.GetService<IOptions<AppSettings>>()!.Value);
             services.AddHttpClient();
             services.AddControllers();
             services.AddSwaggerGen(c =>

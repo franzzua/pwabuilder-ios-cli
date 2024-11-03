@@ -1,14 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.PWABuilder.IOS.Web.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.PWABuilder.IOS.Web.Services
 {
+
     /// <summary>
     /// Creates and tracks temporary files and directories and deletes them when CleanUp() is called.
     /// </summary>
