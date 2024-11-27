@@ -2,7 +2,6 @@ import UIKit
 import WebKit
 import AuthenticationServices
 import SafariServices
-import Foundation
 
 
 func createWebView(container: UIView, WKSMH: WKScriptMessageHandler, WKND: WKNavigationDelegate, NSO: NSObject, VC: ViewController) -> WKWebView{
@@ -23,7 +22,7 @@ func createWebView(container: UIView, WKSMH: WKScriptMessageHandler, WKND: WKNav
     config.preferences.javaScriptCanOpenWindowsAutomatically = true
     config.preferences.setValue(true, forKey: "standalone")
     
-    let webView = FullScreenWKWebView(frame: calcWebviewFrame(webviewView: container, toolbarView: nil), configuration: config)
+    let webView = WKWebView(frame: calcWebviewFrame(webviewView: container, toolbarView: nil), configuration: config)
     
     setCustomCookie(webView: webView)
 
@@ -368,11 +367,5 @@ extension ViewController: WKUIDelegate, WKDownloadDelegate {
 
         self.openFile(url: fileURL)
         completionHandler(fileURL)
-    }
-}
-
-class FullScreenWKWebView: WKWebView {
-    override var safeAreaInsets: UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     }
 }
