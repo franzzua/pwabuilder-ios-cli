@@ -2,7 +2,7 @@ import UIKit
 import WebKit
 import AuthenticationServices
 import SafariServices
-
+import Foundation
 
 func createWebView(container: UIView, WKSMH: WKScriptMessageHandler, WKND: WKNavigationDelegate, NSO: NSObject, VC: ViewController) -> WKWebView{
 
@@ -21,9 +21,9 @@ func createWebView(container: UIView, WKSMH: WKScriptMessageHandler, WKND: WKNav
     config.allowsInlineMediaPlayback = true
     config.preferences.javaScriptCanOpenWindowsAutomatically = true
     config.preferences.setValue(true, forKey: "standalone")
-    
-    let webView = WKWebView(frame: calcWebviewFrame(webviewView: container, toolbarView: nil), configuration: config)
-    
+
+    let webView = FullScreenWKWebView(frame: calcWebviewFrame(webviewView: container, toolbarView: nil), configuration: config)
+
     setCustomCookie(webView: webView)
 
     webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -35,20 +35,20 @@ func createWebView(container: UIView, WKSMH: WKScriptMessageHandler, WKND: WKNav
     webView.scrollView.bounces = false
     webView.scrollView.contentInsetAdjustmentBehavior = .never
     webView.allowsBackForwardNavigationGestures = true
-    
+
     let deviceModel = UIDevice.current.model
     let osVersion = UIDevice.current.systemVersion
     webView.configuration.applicationNameForUserAgent = "Safari/604.1"
     webView.customUserAgent = "Mozilla/5.0 (\(deviceModel); CPU \(deviceModel) OS \(osVersion.replacingOccurrences(of: ".", with: "_")) like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/\(osVersion) Mobile/15E148 Safari/604.1 PWAShell"
 
     webView.addObserver(NSO, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: NSKeyValueObservingOptions.new, context: nil)
-    
+
     #if DEBUG
     if #available(iOS 16.4, *) {
         webView.isInspectable = true
     }
     #endif
-    
+
     return webView
 }
 
@@ -367,5 +367,11 @@ extension ViewController: WKUIDelegate, WKDownloadDelegate {
 
         self.openFile(url: fileURL)
         completionHandler(fileURL)
+    }
+}
+
+class FullScreenWKWebView: WKWebView {
+    override var safeAreaInsets: UIEdgeInsets {
+        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     }
 }
