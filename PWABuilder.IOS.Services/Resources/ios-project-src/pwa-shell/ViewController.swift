@@ -246,10 +246,10 @@ extension ViewController: WKScriptMessageHandler {
         }
         if let ext = extensions[message.name] {
             Task {
-              let result = await ext(message.body);
-                DispatchQueue.main.async(execute: {
-                    Awtor.webView.evaluateJavaScript("this.dispatchEvent(new CustomEvent('\(message.name)', { detail: '\(result)' }))")
-                })            }
+                let result = ext(message.body, self) { result, error in
+                    Awtor.webView.evaluateJavaScript("this.dispatchEvent(new CustomEvent('\(message.name)', { detail: { result: '\(result!)', error: '\(error ?? "")' } }))")
+                }
+            }
         }
   }
 }

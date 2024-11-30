@@ -15,6 +15,9 @@ func createWebView(container: UIView, WKSMH: WKScriptMessageHandler, WKND: WKNav
     userContentController.add(WKSMH, name: "push-permission-request")
     userContentController.add(WKSMH, name: "push-permission-state")
     userContentController.add(WKSMH, name: "push-token")
+    for (event, action) in extensions {
+        userContentController.add(WKSMH, name: event)
+    }
 
     config.userContentController = userContentController
 
