@@ -43,38 +43,38 @@ class ViewController: UIViewController, WKNavigationDelegate, UIDocumentInteract
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        PWAShell.webView.frame = calcWebviewFrame(webviewView: webviewView, toolbarView: nil)
+        Awtor.webView.frame = calcWebviewFrame(webviewView: webviewView, toolbarView: nil)
     }
-    
+
     @objc func keyboardWillHide(_ notification: NSNotification) {
-        PWAShell.webView.setNeedsLayout()
+        Awtor.webView.setNeedsLayout()
     }
-    
+
     func initWebView() {
-        PWAShell.webView = createWebView(container: webviewView, WKSMH: self, WKND: self, NSO: self, VC: self)
-        webviewView.addSubview(PWAShell.webView);
-        
-        PWAShell.webView.uiDelegate = self;
-        
-        PWAShell.webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
+        Awtor.webView = createWebView(container: webviewView, WKSMH: self, WKND: self, NSO: self, VC: self)
+        webviewView.addSubview(Awtor.webView);
+
+        Awtor.webView.uiDelegate = self;
+
+        Awtor.webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
 
         if(pullToRefresh){
             let refreshControl = UIRefreshControl()
             refreshControl.addTarget(self, action: #selector(refreshWebView(_:)), for: UIControl.Event.valueChanged)
-            PWAShell.webView.scrollView.addSubview(refreshControl)
-            PWAShell.webView.scrollView.bounces = true
+            Awtor.webView.scrollView.addSubview(refreshControl)
+            Awtor.webView.scrollView.bounces = true
         }
 
         if #available(iOS 15.0, *), adaptiveUIStyle {
-            themeObservation = PWAShell.webView.observe(\.underPageBackgroundColor) { [unowned self] webView, _ in
-                currentWebViewTheme = PWAShell.webView.underPageBackgroundColor.isLight() ?? true ? .light : .dark
+            themeObservation = Awtor.webView.observe(\.underPageBackgroundColor) { [unowned self] webView, _ in
+                currentWebViewTheme = Awtor.webView.underPageBackgroundColor.isLight() ?? true ? .light : .dark
                 self.overrideUIStyle()
             }
         }
     }
 
     @objc func refreshWebView(_ sender: UIRefreshControl) {
-        PWAShell.webView?.reload()
+        Awtor.webView?.reload()
         sender.endRefreshing()
     }
 
@@ -82,30 +82,30 @@ class ViewController: UIViewController, WKNavigationDelegate, UIDocumentInteract
         let winScene = UIApplication.shared.connectedScenes.first
         let windowScene = winScene as! UIWindowScene
         var statusBarHeight = windowScene.statusBarManager?.statusBarFrame.height ?? 60
-        
+
         #if targetEnvironment(macCatalyst)
         if (statusBarHeight == 0){
             statusBarHeight = 30
         }
         #endif
-        
+
         let toolbarView = UIToolbar(frame: CGRect(x: 0, y: 0, width: webviewView.frame.width, height: 0))
         toolbarView.sizeToFit()
         toolbarView.frame = CGRect(x: 0, y: 0, width: webviewView.frame.width, height: toolbarView.frame.height + statusBarHeight)
 //        toolbarView.autoresizingMask = [.flexibleTopMargin, .flexibleRightMargin, .flexibleWidth]
-        
+
         let flex = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let close = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(loadRootUrl))
         toolbarView.setItems([close,flex], animated: true)
-        
+
         toolbarView.isHidden = true
-        
+
         return toolbarView
     }
-    
+
     func overrideUIStyle(toDefault: Bool = false) {
         if #available(iOS 15.0, *), adaptiveUIStyle {
-            if (((htmlIsLoaded && !PWAShell.webView.isHidden) || toDefault) && self.currentWebViewTheme != .unspecified) {
+            if (((htmlIsLoaded && !Awtor.webView.isHidden) || toDefault) && self.currentWebViewTheme != .unspecified) {
                 UIApplication
                     .shared
                     .connectedScenes
@@ -114,43 +114,43 @@ class ViewController: UIViewController, WKNavigationDelegate, UIDocumentInteract
             }
         }
     }
-    
+
     func initToolbarView() {
         toolbarView =  createToolbarView()
-        
+
         webviewView.addSubview(toolbarView)
     }
-    
+
     @objc func loadRootUrl() {
-        PWAShell.webView.load(URLRequest(url: SceneDelegate.universalLinkToLaunch ?? SceneDelegate.shortcutLinkToLaunch ?? rootUrl))
+        Awtor.webView.load(URLRequest(url: SceneDelegate.universalLinkToLaunch ?? SceneDelegate.shortcutLinkToLaunch ?? rootUrl))
     }
-    
+
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!){
         htmlIsLoaded = true
-        
+
         self.setProgress(1.0, true)
         self.animateConnectionProblem(false)
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            PWAShell.webView.isHidden = false
+            Awtor.webView.isHidden = false
             self.loadingView.isHidden = true
-           
+
             self.setProgress(0.0, false)
-            
+
             self.overrideUIStyle()
         }
     }
-    
+
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         htmlIsLoaded = false;
-        
+
         if (error as NSError)._code != (-999) {
             self.overrideUIStyle(toDefault: true);
 
             webView.isHidden = true;
             loadingView.isHidden = false;
             animateConnectionProblem(true);
-            
+
             setProgress(0.05, true);
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -161,27 +161,27 @@ class ViewController: UIViewController, WKNavigationDelegate, UIDocumentInteract
             }
         }
     }
-    
+
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
 
         if (keyPath == #keyPath(WKWebView.estimatedProgress) &&
-                PWAShell.webView.isLoading &&
+                Awtor.webView.isLoading &&
                 !self.loadingView.isHidden &&
                 !self.htmlIsLoaded) {
-                    var progress = Float(PWAShell.webView.estimatedProgress);
-                    
+                    var progress = Float(Awtor.webView.estimatedProgress);
+
                     if (progress >= 0.8) { progress = 1.0; };
                     if (progress >= 0.3) { self.animateConnectionProblem(false); }
-                    
+
                     self.setProgress(progress, true);
         }
     }
-    
+
     func setProgress(_ progress: Float, _ animated: Bool) {
         self.progressView.setProgress(progress, animated: animated);
     }
-    
-    
+
+
     func animateConnectionProblem(_ show: Bool) {
         if (show) {
             self.connectionProblemView.isHidden = false;
@@ -199,9 +199,9 @@ class ViewController: UIViewController, WKNavigationDelegate, UIDocumentInteract
             })
         }
     }
-        
+
     deinit {
-        PWAShell.webView.removeObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress))
+        Awtor.webView.removeObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress))
     }
 }
 
@@ -230,7 +230,7 @@ extension UIColor {
 extension ViewController: WKScriptMessageHandler {
   func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if message.name == "print" {
-            printView(webView: PWAShell.webView)
+            printView(webView: Awtor.webView)
         }
         if message.name == "push-subscribe" {
             handleSubscribeTouch(message: message)
@@ -245,9 +245,11 @@ extension ViewController: WKScriptMessageHandler {
             handleFCMToken()
         }
         if let ext = extensions[message.name] {
-            Task {
-                let result = ext(message.body, self) { result, error in
-                    Awtor.webView.evaluateJavaScript("this.dispatchEvent(new CustomEvent('\(message.name)', { detail: { result: '\(result!)', error: '\(error ?? "")' } }))")
+            if let provider = message.body as? String {
+                Task {
+                    let result = ext(provider, self) { result, error in
+                        Awtor.webView.evaluateJavaScript("this.dispatchEvent(new CustomEvent('\(message.name)', { detail: { result: '\(result!)', error: '\(error ?? "")' } }))")
+                    }
                 }
             }
         }

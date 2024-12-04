@@ -105,5 +105,16 @@
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	</array>
 	<key>{{PWABuilder.iOS.shortcuts}}</key>
+	<key>GIDClientID</key>
+    <string>%GOOGLE_CLIENT_ID%</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+           <string>%GOOGLE_CLIENT_ID_REVERSED%</string>
+        </array>
+      </dict>
+    </array>
 </dict>
 </plist>
