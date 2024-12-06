@@ -98,8 +98,7 @@ func calcWebviewFrame(webviewView: UIView, toolbarView: UIToolbar?) -> CGRect{
             #if targetEnvironment(macCatalyst)
             statusBarHeight = 29
             #endif
-            let windowHeight = webviewView.frame.height - statusBarHeight
-            return CGRect(x: 0, y: statusBarHeight, width: webviewView.frame.width, height: windowHeight)
+            return CGRect(x: 0, y: 0, width: webviewView.frame.width, height: webviewView.frame.height)
         }
     }
 }
