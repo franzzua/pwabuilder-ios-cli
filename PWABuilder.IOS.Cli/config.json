@@ -1,0 +1,46 @@
+{
+  "name": "Example",
+  "bundleId": "com.example.twa",
+  "url": "https://example.com",
+  "imageUrl": "https://example.com/icons/maskable_icon_x512.png",
+  "splashColor": "#AAA",
+  "progressBarColor": "#AAA",
+  "statusBarColor": "#AAA",
+  "permittedUrls": [
+    "account.google.com"
+  ],
+  "manifestUrl": "https://example.com/manifest.json",
+  "manifest": {
+    "short_name": "Example",
+    "name": "Example",
+    "description": "Example is example app",
+    "categories": [ "entertainment" ],
+    "screenshots": [
+
+    ],
+    "icons": [
+      {
+        "src": "/icons/icon.svg",
+        "type": "image/svg",
+        "sizes": "128x128"
+      },
+      {
+        "src": "/icons/maskable_icon_x192.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      },
+      {
+        "src": "/icons/maskable_icon_x512.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ],
+    "start_url": "/",
+    "background_color": "#AAA",
+    "display": "fullscreen",
+    "scope": "/",
+    "theme_color": "#AAA",
+    "shortcuts": [
+    ]
+  }
+}
