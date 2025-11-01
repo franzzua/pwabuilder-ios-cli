@@ -4,6 +4,7 @@ import AuthenticationServices
 import SafariServices
 import Foundation
 
+
 func createWebView(container: UIView, WKSMH: WKScriptMessageHandler, WKND: WKNavigationDelegate, NSO: NSObject, VC: ViewController) -> WKWebView{
 
     let config = WKWebViewConfiguration()
@@ -14,6 +15,9 @@ func createWebView(container: UIView, WKSMH: WKScriptMessageHandler, WKND: WKNav
     userContentController.add(WKSMH, name: "push-permission-request")
     userContentController.add(WKSMH, name: "push-permission-state")
     userContentController.add(WKSMH, name: "push-token")
+    for (event, action) in extensions {
+        userContentController.add(WKSMH, name: event)
+    }
 
     config.userContentController = userContentController
 
@@ -22,7 +26,7 @@ func createWebView(container: UIView, WKSMH: WKScriptMessageHandler, WKND: WKNav
     config.preferences.javaScriptCanOpenWindowsAutomatically = true
     config.preferences.setValue(true, forKey: "standalone")
     
-    let webView = FullScreenWKWebView(frame: calcWebviewFrame(webviewView: container, toolbarView: nil), configuration: config)
+    let webView = WKWebView(frame: calcWebviewFrame(webviewView: container, toolbarView: nil), configuration: config)
     
     setCustomCookie(webView: webView)
 
@@ -94,8 +98,7 @@ func calcWebviewFrame(webviewView: UIView, toolbarView: UIToolbar?) -> CGRect{
             #if targetEnvironment(macCatalyst)
             statusBarHeight = 29
             #endif
-            let windowHeight = webviewView.frame.height - statusBarHeight
-            return CGRect(x: 0, y: statusBarHeight, width: webviewView.frame.width, height: windowHeight)
+            return CGRect(x: 0, y: 0, width: webviewView.frame.width, height: webviewView.frame.height)
         }
     }
 }
@@ -367,11 +370,5 @@ extension ViewController: WKUIDelegate, WKDownloadDelegate {
 
         self.openFile(url: fileURL)
         completionHandler(fileURL)
-    }
-}
-
-class FullScreenWKWebView: WKWebView {
-    override var safeAreaInsets: UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     }
 }
